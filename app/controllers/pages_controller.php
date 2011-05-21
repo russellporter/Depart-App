@@ -65,9 +65,6 @@ class PagesController extends AppController {
 		$path = func_get_args();
 		if($path[0] == 'home') {
 			$domain = $_SERVER['HTTP_HOST']; 
-			if(strpos($domain,"transit.russellporter.com")) {
-				$this->redirect("http://www.departapp.com/");
-			}
 		}
 		$count = count($path);
 		if (!$count) {

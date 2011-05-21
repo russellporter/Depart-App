@@ -1,5 +1,4 @@
 <?php
-// necessary for playbook webworks crap as of Mar 20th 2011
 $this->layout=null;
 // better upper case of first letter in word function
 function ucname($string) {

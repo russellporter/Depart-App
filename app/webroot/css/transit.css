@@ -1,0 +1,69 @@
+html { 
+	height: 100%;
+	font-family: sans-serif;
+}
+body { height: 100%; margin: 0px; padding: 0px }
+#map_canvas { height: 100% }
+#sidebar {
+	display:block;
+	position:absolute;
+	bottom:5%;
+	opacity:0.95;
+	right:0;
+	width:200px;
+	height: 95%; 
+	padding:10px; 
+	background:#eee; 
+	overflow:auto;
+
+}
+
+#sidebar h1 {
+
+	color: #0053a7;
+
+	margin-bottom: 0px;
+
+	font-weight: bold;
+
+	font-size: xx-large;
+
+}
+
+#sidebar h2 {
+	margin-top: 0px;
+	font-style: italic;
+	font-size: small;
+}
+#sidebar h3 {
+
+	margin: 0px;
+
+	font-weight: bold;
+
+}
+
+#sidebar p {
+
+	font-size: xx-small;
+
+	margin: 0px;
+
+}
+
+#sidebar #legal {
+	padding-top: 30px;
+	opacity:1.0;
+	font-family:Helvetica;
+	font-size:small;
+	bottom:0;
+}
+
+#sidebar #loading_info_spinner {
+	padding: 40px;
+	text-align: center
+}
+
+#sidebar #timeShift {
+	width: 100%;
+}

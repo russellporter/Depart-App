@@ -3,7 +3,7 @@ html {
 	font-family: sans-serif;
 }
 body { height: 100%; margin: 0px; padding: 0px }
-#map_canvas { float:left; height: 100% }
+#map_canvas { float:left; height: 100%; width: 100% }
 #sidebar {
 	display:block;
 	float:right;

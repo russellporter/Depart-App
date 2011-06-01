@@ -12,10 +12,9 @@ body { height: 100%; margin: 0px; padding: 0px }
 }
 
 #content {
-	margin-left: 200px;
+	float:right;
 	border-left: 1px solid gray;
-	padding: 1em;
-	max-width: 36em;
+	padding: 10px;
 }
 
 #clear {

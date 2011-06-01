@@ -44,3 +44,4 @@ echo $this->Html->script('transit',array('inline'=>false)); ?>
 				
 	</div>
 </div>
+<br style="clear">

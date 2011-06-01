@@ -5,7 +5,7 @@ html {
 body { height: 100%; margin: 0px; padding: 0px }
 
 #sidebar {
-	float:right;
+	float:left;
 	opacity:0.95;
 	width:200px;
 	padding:10px; 

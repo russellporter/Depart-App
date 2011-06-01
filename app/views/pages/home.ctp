@@ -44,7 +44,7 @@ echo $this->Html->script('transit',array('inline'=>false)); ?>
 	</div>
 	
 	<div id="content">
-		<div id="map_canvas" style="width:200px; height:200px"></div>
+		<div id="map_canvas" style="width:100%; height:200px"></div>
 		
 		<!--<div id="streetView"></div>-->
 	</div>

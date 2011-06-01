@@ -4,7 +4,7 @@
 
 echo $this->set('title_for_layout','Depart');
 echo $this->Html->script('transit',array('inline'=>false)); ?> 
-<a href="http://github.com/you"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://d3nwyuy0nl342s.cloudfront.net/img/abad93f42020b733148435e2cd92ce15c542d320/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub"></a>
+<a href="https://github.com/russellporter/Depart-App"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://d3nwyuy0nl342s.cloudfront.net/img/edc6dae7a1079163caf7f17c60495bbb6d027c93/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f6c6566745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub"></a>
 <div id="map_canvas" style="width:100%; height:100%"></div>
 <div id="streetView"></div>
 <div id="sidebar">

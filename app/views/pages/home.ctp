@@ -46,7 +46,7 @@ echo $this->Html->script('transit',array('inline'=>false)); ?>
 		</div>
 	</div>
 	
-	<div id="footer">
+	<div id="clear">
 		
 	</div>
 </div>

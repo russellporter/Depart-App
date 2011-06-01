@@ -3,7 +3,9 @@ html {
 	font-family: sans-serif;
 }
 body { height: 100%; margin: 0px; padding: 0px }
-#map_canvas {  }
+#map_canvas {
+	height: 800px;
+}
 #sidebar {
 	float:right;
 	position:relative;

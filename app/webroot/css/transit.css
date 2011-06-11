@@ -2,14 +2,13 @@ html {
 	height: 100%;
 	font-family: sans-serif;
 }
-body { width: 100%; height: 100%; margin: 0px; padding: 0px }
-
-#sidebar {
-	float:left;
-	width:200px;
-	margin-left: -100%;
-	position: relative; 
-	background:#eee;
+body { 
+	width: 100%; 
+	height: 100%; 
+	margin: 0px; 
+	padding: 0px;
+	width: 100%;
+	min-width: 1000px;
 }
 
 #content {
@@ -17,7 +16,7 @@ body { width: 100%; height: 100%; margin: 0px; padding: 0px }
 	height: 100%;
 	float: left;
 	overflow: hidden;
-	padding: 0 0 0 210px;
+	margin: 0 0 0 220px;
 }
 
 #clear {
@@ -27,17 +26,11 @@ body { width: 100%; height: 100%; margin: 0px; padding: 0px }
 
 #container {
 	width: 100%;
+	height: 100%;
 	position: relative;
-	float: left;
 	overflow: hidden;
 }
-#container:after {
-	content: '.';
-	display: block;
-	clear: both;
-	visibility: hidden;
-	height: 0;
-}
+
 
 #sidebar h1 {
 
@@ -57,19 +50,14 @@ body { width: 100%; height: 100%; margin: 0px; padding: 0px }
 	font-size: small;
 }
 #sidebar h3 {
-
 	margin: 0px;
-
 	font-weight: bold;
 
 }
 
 #sidebar p {
-
 	font-size: xx-small;
-
 	margin: 0px;
-
 }
 
 #sidebar #legal {
@@ -78,6 +66,16 @@ body { width: 100%; height: 100%; margin: 0px; padding: 0px }
 	font-family:Helvetica;
 	font-size:small;
 	bottom:0;
+}
+
+#sidebar {
+	width: 200px;
+	height: 100%;
+	position:absolute;
+	left:0px;
+	top:0px;
+	padding: 10px;
+	background: #eee;
 }
 
 #sidebar #loading_info_spinner {

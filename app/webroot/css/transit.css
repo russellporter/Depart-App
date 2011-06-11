@@ -2,20 +2,21 @@ html {
 	height: 100%;
 	font-family: sans-serif;
 }
-body { height: 100%; margin: 0px; padding: 0px }
+body { width: 100%; height: 100%; margin: 0px; padding: 0px }
 
 #sidebar {
 	float:left;
 	width:200px;
-	padding:10px; 
-	background:#eee; 
+	margin-left: -100%;
+	position: relative; 
+	background:#eee;
 }
 
 #content {
-	width:100%;
-	height:100%;
-	border-left: 1px solid gray;
-	padding: 10px;
+	width: 100%;
+	float: left;
+	overflow: hidden;
+	padding: 0 0 0 210px;
 }
 
 #clear {
@@ -25,6 +26,17 @@ body { height: 100%; margin: 0px; padding: 0px }
 
 #container {
 	width: 100%;
+	height: 1%;
+	position: relative;
+	float: left;
+	overflow: hidden;
+}
+#container:after {
+	content: '.';
+	display: block;
+	clear: both;
+	visibility: hidden;
+	height: 0;
 }
 
 #sidebar h1 {

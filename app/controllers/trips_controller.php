@@ -42,8 +42,13 @@ class TripsController extends AppController {
 	
 	function view($id,$timeShift = 0)
 	{
-		$trip = $this->Trip->find('first',array('conditions' => array('Trip.id' => $id),'contain'=>array('StopTime','Shape','StopTime.Stop','Route.short_name','Route.name')));
-		
+		$trip = $this->Trip->find('first',array('conditions' => array('Trip.id' => $id),'contain'=>array('StopTime','StopTime.Stop','Route.short_name','Route.name')));
+		$shapeData = $this->Trip->Shape->findById($trip["Trip"]["shape_id"]);
+		foreach($shapeData as $point) 
+		{
+			$shapePoint = array();
+			$trip["Shape"][$point["ShapePoint"]["shape_pt_sequence"]] = $point["ShapePoint"];
+		}
 		$this->set('trip',$trip);
 		$this->set('time_shift',$timeShift);
 		if ($this->RequestHandler->isAjax()) {

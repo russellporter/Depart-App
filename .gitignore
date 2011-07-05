@@ -2,3 +2,6 @@
 
 app/config/database.php
 app/config/core.php
+app/tmp/*
+app/webroot/favicon.ico
+app/webroot/files/cache/*

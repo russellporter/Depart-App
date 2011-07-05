@@ -311,13 +311,13 @@ function showTripPath(tripId) {
 		}
 		var tripPathCoordinates = [
 		];
-		var stops = tripData["StopTime"];
-		for(var i = 0; i < stops.length; i++) {
-			tripPathCoordinates.push(new google.maps.LatLng(parseFloat(stops[i]['Stop']['latitude']),parseFloat(stops[i] ['Stop']['longitude'])));
+		var shape = tripData["Shape"];
+		for(point in shape) {
+			tripPathCoordinates.push(new google.maps.LatLng(parseFloat(shape[point]['shape_pt_lat']),parseFloat(shape[point]['shape_pt_lon'])));
 		}
 		var tripPath = new google.maps.Polyline({
 			path: tripPathCoordinates,
-			strokeColor: "#FF0000",
+			strokeColor: "#FF00FB",
 			strokeOpacity: 1.0,
 			strokeWeight: 2
 		});
@@ -423,7 +423,7 @@ function showTripInfo(tripId) {
 }
 
 function updatePositions() {
-	if(readyToShow == 1) {
+	if(readyToShow == 1 && map.getBounds() != null) {
 	//var currentTime = Math.round(((new Date()).getTime()-Date.UTC(1970,0,1))/1000);
 	//alert("test"+currentTime);
 	northBound = map.getBounds().getNorthEast().lat();

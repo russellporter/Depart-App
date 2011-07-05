@@ -42,7 +42,7 @@ class TripsController extends AppController {
 	
 	function view($id,$timeShift = 0)
 	{
-		$trip = $this->Trip->find('first',array('conditions' => array('Trip.id' => $id),'contain'=>array('StopTime','StopTime.Stop','Route.short_name','Route.name')));
+		$trip = $this->Trip->find('first',array('conditions' => array('Trip.id' => $id),'contain'=>array('StopTime','Shape','StopTime.Stop','Route.short_name','Route.name')));
 		
 		$this->set('trip',$trip);
 		$this->set('time_shift',$timeShift);

@@ -9,7 +9,7 @@
 	<meta content='width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;' name='viewport' />
 	<meta name="viewport" content="width=device-width" />
 	<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
-	<script type="text/javascript" src="/js/jquery-1.5.1.min.js"></script>
+	<script type="text/javascript" src="/js/jquery-1.6.2.min.js"></script>
 	<script type="text/javascript" src="/js/jquery.blockUI.js"></script>
 	<script type="text/javascript" src="/js/jquery.pngFix.pack.js"></script>
 	<link rel="stylesheet" type="text/css" href="/css/transit.css" />

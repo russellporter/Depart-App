@@ -108,7 +108,7 @@ class TripsController extends AppController {
 	function cacheTrip($reload = false) {
 		$timeStart = microtime(true);
 		if($reload) {
-			echo '<head><meta http-equiv="REFRESH" content="10;url=/Trips/cacheTrip/true"></head>';
+			echo '<head><meta http-equiv="REFRESH" content="30;url=/Trips/cacheTrip/true"></head>';
 		}
 		$this->Trip->cacheTrip();
 		$time = microtime(true) - $timeStart;

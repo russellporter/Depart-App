@@ -48,5 +48,5 @@
  * Inflector::rules('plural', array('rules' => array(), 'irregular' => array(), 'uninflected' => array()));
  *
  */
-ini_set('memory_limit', '400M');
+ini_set('memory_limit', '600M');
 ini_set('max_execution_time',300);

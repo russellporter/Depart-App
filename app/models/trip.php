@@ -164,7 +164,7 @@ class Trip extends AppModel {
 		$startDay = $this->baselineTimestamp(time()) + 86400; // generate stuff for tomorrow
 		$endDay = $startDay + 86400;
 		$offset = 0;
-		$additionalOverlapRequest = 1401;
+		$additionalOverlapRequest = Configure::read('TripCache.extraTimeBuffer');
 		$increment = 60*15; // 15 mins
 		$i=0;
 		// generate at half-hour increments

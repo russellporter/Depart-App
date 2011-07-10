@@ -13,6 +13,8 @@ class Trip extends AppModel {
 		'short_name' => 'Trip.trip_short_name'
 	);
 	
+	var $shapeCache;
+	
 	//The Associations below have been created with all possible keys, those that are not needed can be removed
 	var $belongsTo = array(
 		'Route' => array(
@@ -69,6 +71,16 @@ class Trip extends AppModel {
 		
 		return ($baselineTimestamp + $relativeTimestamp);
 	}
+	
+	/**
+	* Does some shape caching
+	**/
+	function _getShape($id) {
+		if(empty($shapeCache[$id])) {
+			$shapeCache[$id] = $this->Shape->find('all',array('recursive' => -1, 'fields' => array('Shape.shape_pt_lat','Shape.shape_pt_lon'), 'order' => array('Shape.shape_pt_sequence'), 'conditions' => array('Shape.shape_id' => $id)));
+		}
+		return $shapeCache[$id];
+	}
 
 	function _tripsInAreaByStops(&$tripsInArea, $baselineTimestamp, $trimFrom=null, $trimTo=null, $previousDay = false) 
 	{
@@ -95,6 +107,7 @@ class Trip extends AppModel {
 			if(empty($trips[$tripId])) {
 				$trips[$tripId] = array();
 				$trips[$tripId]["stops"] = array();
+				$trips[$tripId]["shape_id"] = $stopOnTrip['trips']['shape_id'];
 				$trips[$tripId]["route"]["short_name"] = $stopOnTrip['routes']['route_short_name'];
 			}
 			
@@ -126,6 +139,17 @@ class Trip extends AppModel {
 			$lastStop = $stop;
 			$lastTripId = $tripId;
 		}
+		
+		// add in shapes, interpolate timing
+		foreach($trips as &$trip) {
+			$shapeData = $this->_getShape($trip["shape_id"]);
+			if(!empty($trip["stops"]) && !empty($shapeData)) {
+				
+				$trip["stops"] = $this->shapeToScheduledShape($shapeData, $trip["stops"]);
+				$this->computeShapeTimes($trip["stops"]);
+			}
+		}
+		
 		return $trips;
 	}
 	
@@ -155,7 +179,9 @@ class Trip extends AppModel {
 					$endTimestamp -= $additionalOverlapRequest+1;
 				}
 				
-				$resultJson = json_encode($this->getTripsInAreaAtTime($startTimestamp, $endTimestamp,null,null,null,null,$additionalOverlapRequest));
+				$trips = $this->getTripsInAreaAtTime($startTimestamp, $endTimestamp,null,null,null,null,$additionalOverlapRequest);
+
+				$resultJson = json_encode($trips);
 				
 				
 				$fp = fopen($fileTarget, 'w');
@@ -211,7 +237,7 @@ class Trip extends AppModel {
 		
 		$databaseOrderBy = $databasePrefix.'trips.trip_id, '.$databasePrefix.'stop_times.stop_sequence ASC';
 		
-		$selectFields = $databasePrefix."stop_times.departure_time_seconds, ".$databasePrefix."trips.trip_id, ".$databasePrefix."routes.route_short_name, ".$databasePrefix."stops.stop_lat, ".$databasePrefix."stops.stop_lon";
+		$selectFields = $databasePrefix."stop_times.departure_time_seconds, ".$databasePrefix."trips.trip_id, ".$databasePrefix."trips.shape_id, ".$databasePrefix."routes.route_short_name, ".$databasePrefix."stops.stop_lat, ".$databasePrefix."stops.stop_lon";
 		
 		if($timeStartSeconds < Configure::read('Trip.previousDayTripsThreshold')) {
 			// early morning, check for trips overflowing from the previous day..
@@ -225,9 +251,9 @@ class Trip extends AppModel {
 			$query = "SELECT ".$selectFields." FROM ".$databaseFrom." WHERE ".$databaseWhere." ORDER BY ".$databaseOrderBy;
 			$previousDay = false;
 		}
-		//die($query);
+
 		$tripsInArea = $this->query($query);
-		
+
 		$baselineTimestamp = $this->baselineTimestamp($startTimestamp);
 		
 		if(!empty($timeBuffer)) {
@@ -260,6 +286,167 @@ class Trip extends AppModel {
 				die( ORDER BY ".TABLE_TRIPS.".`id`, ".TABLE_STOP_TIMES.".`stop_sequence` ASC");
 		*/
 		//$this->query();
+	}
+	
+	
+	/**
+	* Convert a naive shape to a shape with timing data (some points won't have timing data though, use computeShapeTimes)
+	* Complexity: O(n)
+	* Discussion about this method at: http://stackoverflow.com/questions/6605834/associating-nearby-points-with-a-path
+	* Output format: ordered array of points
+	* Point properties: 
+	*	stop = true (depending on the source of the point)
+	*	shape = true (depending on the source of the point)
+	*	latitude
+	*	longitude
+	*	if is stop
+	*		departure_time_seconds
+	*		arrival_time_seconds
+	* TODO Unit test
+	**/
+	function shapeToScheduledShape($shape, $trip) {
+		$tripSize = count($trip);
+		$shapeSize = count($shape);
+		$pointsLeft = $tripSize + $shapeSize;
+		// pointers point to next to process
+		$stopPointer = 0;
+		$shapePointer = 0;
+		// current empty pointer
+		$resultPointer = 0;
+		
+		$results = array();
+		$results[$resultPointer] = array();
+		
+		$this->setStopResult($trip, $stopPointer, $results, $resultPointer);
+		$pointsLeft--;
+		
+		// determine shape pointer starting position
+		foreach($shape as $point) {
+			if($this->distanceBetweenPoints($point["Shape"]["shape_pt_lat"], $point["Shape"]["shape_pt_lon"], $results[0]["lat"], $results[0]["lng"]) < Configure::read('ShapeStopMergingThreshold')) {
+				break;
+			}
+			$shapePointer++;
+		}
+
+		while($tripSize > $stopPointer) {
+			$lat1 = $results[$resultPointer-1]["lat"];
+			$lng1 = $results[$resultPointer-1]["lng"];
+			
+			// try stop, then shape, see which is closer
+			$shapeDistance = 1000000;
+			if($shapePointer < $shapeSize) {
+				$shapeLat1 = $shape[$shapePointer]["Shape"]["shape_pt_lat"];
+				$shapeLng1 = $shape[$shapePointer]["Shape"]["shape_pt_lon"];
+				$shapeDistance = $this->distanceBetweenPoints($lat1, $lng1, $shapeLat1, $shapeLng1);
+			}
+			
+			$stopDistance = 1000000;
+			if($stopPointer < $tripSize) {
+				$stopLat1 = $trip[$stopPointer]["lat"];
+				$stopLng1 = $trip[$stopPointer]["lng"];
+				$stopDistance = $this->distanceBetweenPoints($lat1, $lng1, $stopLat1, $stopLng1);
+			}
+			
+			$results[$resultPointer] = array();
+			
+			if($shapeDistance < $stopDistance) {
+				$this->setShapeResult($shape, $shapePointer, $results, $resultPointer);
+			} else {
+				$this->setStopResult($trip, $stopPointer, $results, $resultPointer);
+			}
+
+			$pointsLeft--;
+		}
+		
+		return $results;
+	}
+	
+	/**
+	* Add time to all points by interpolating between stop points
+	* Assumes the first point is a stop with time
+	* Complexity: O(n)
+	**/
+	function computeShapeTimes(&$shape) {
+		$shapeSize = count($shape);	
+		$currentIndex = 0;
+		$distanceBetweenStops = 0;
+		$lastStopTime = 0;
+		$previousPoint = null;
+		$lastStopDepartureTime = 0;
+		$nextStopArrivalTime = 0;
+		$distanceFromLastStop = 0;
+		foreach($shape as $point) {
+			if(!empty($point["stop"])) {
+				$lastStopDepartureTime = $point["time"];
+				$distanceBetweenStops = $this->computeDistanceBetweenStops($shape, $currentIndex, $nextStopArrivalTime);
+				$distanceFromLastStop = 0;
+				
+				// if no more stops
+				if($distanceBetweenStops == 0 && $currentIndex > $shapeSize) break;
+			} else {
+				$distanceFromLastStop += $this->distanceBetweenPoints($previousPoint["lat"], $previousPoint["lng"], $point["lat"], $point["lng"]);
+				$time = $nextStopArrivalTime - $lastStopDepartureTime;
+				
+				if($time == 0) break;
+				if($distanceBetweenStops != 0) {
+					$shape[$currentIndex]["time"] = $shape[$currentIndex]["time"] = $lastStopDepartureTime + round($time / $distanceBetweenStops * $distanceFromLastStop);
+				} else {
+					$shape[$currentIndex]["time"] = $shape[$currentIndex - 1]["time"];
+				}
+			}
+			$previousPoint = $point;
+			$currentIndex++;
+		}
+	}
+	
+	function computeDistanceBetweenStops(&$shape, $startingStopIndex, &$stopArrivalTime) {
+		$i = $startingStopIndex + 1;
+		$totalDistance = 0;
+		while(empty($shape[$i]["stop"]) && !empty($shape[$i])) {
+			$totalDistance += $this->distanceBetweenPoints($shape[$i-1]["lat"], $shape[$i-1]["lng"], $shape[$i]["lat"], $shape[$i]["lng"]);
+			$i++;
+		}
+		
+		// Add distance between last point and stop
+		if(!empty($shape[$i])) {
+			$totalDistance += $this->distanceBetweenPoints($shape[$i-1]["lat"], $shape[$i-1]["lng"], $shape[$i]["lat"], $shape[$i]["lng"]);
+		}
+		
+		if(!empty($shape[$i]["stop"]))
+			$stopArrivalTime = $shape[$i]["time"];
+		
+		return $totalDistance;
+	}
+
+	function setShapeResult(&$shape, &$shapePointer, &$results, &$resultPointer) {
+		$results[$resultPointer]["shape"] = true;
+		$results[$resultPointer]["lat"] = $shape[$shapePointer]["Shape"]["shape_pt_lat"];
+		$results[$resultPointer]["lng"] = $shape[$shapePointer]["Shape"]["shape_pt_lon"];
+		$shapePointer++;
+		$resultPointer++;
+	}
+	
+	function setStopResult(&$stops, &$stopPointer, &$results, &$resultPointer) {
+		$results[$resultPointer]["stop"] = true;
+		$results[$resultPointer]["lat"] = $stops[$stopPointer]["lat"];
+		$results[$resultPointer]["lng"] = $stops[$stopPointer]["lng"];
+		$results[$resultPointer]["time"] = $stops[$stopPointer]["time"];
+		//$results[$resultPointer]["arrival_time_seconds"] = $stops[$stopPointer]["arrival_time_seconds"];
+		$stopPointer++;
+		$resultPointer++;
+	}
+	
+	/**
+	* Distance in meters between two points in lat/lng coordinates
+	* Complexity: O(1)
+	* TODO Accuracy unit test
+	**/
+	function distanceBetweenPoints($lat1, $lng1, $lat2, $lng2) {
+		if($lat1 == $lat2 && $lng1 == $lng2) {
+			return 0;
+		}
+		$distance =  111189.57696*rad2deg(acos(sin(deg2rad($lat1)) * sin(deg2rad($lat2)) +  cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($lng1-$lng2))));
+		return $distance;
 	}
 }
 ?>

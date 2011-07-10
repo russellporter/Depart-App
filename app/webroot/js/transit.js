@@ -8,7 +8,8 @@ var lastClickedMarker = 0;
 var currentTime = 0;
 var timeServerUpdate = 0;
 var lastTripPath;
-var urlPrefix = "http://www.departapp.com/";
+// can set to http://www.departapp.com/ for portable web apps
+var urlPrefix = "";
 var timeShift = 0;
 var streetViewOpened = false;
 var panorama;

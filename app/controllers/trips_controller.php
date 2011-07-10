@@ -14,6 +14,7 @@ class TripsController extends AppController {
 		
 		$fileTarget = Configure::read('TripCache.prefix').($startFileTime).'.json';
 		$webTarget = Configure::read('TripCache.webPrefix').($startFileTime).'.json';
+		
 		if(file_exists($fileTarget)) {	
 			$trips = file_get_contents($fileTarget);
 			$this->set('trips', $trips);
@@ -33,6 +34,9 @@ class TripsController extends AppController {
 				$startTime = time()-1000;
 				$duration = 2500;
 			}
+			if(empty($north)) {
+				$north = $south = $west = $east = 0;
+			}
 			$trips = $this->Trip->getTripsInAreaAtTime($startTime, $startTime+$duration, $north, $south, $east, $west);
 			$jsonEncodedTrips = json_encode($trips);
 			
@@ -44,6 +48,51 @@ class TripsController extends AppController {
 	{
 		$trip = $this->Trip->find('first',array('conditions' => array('Trip.id' => $id),'contain'=>array('StopTime','StopTime.Stop','Route.short_name','Route.name')));
 		$shapeData = $this->Trip->Shape->findById($trip["Trip"]["shape_id"]);
+		$shape = array();
+
+		// Debug output
+		if(Configure::read('debug') >= 1) {
+			$this->set('debug',true);
+			
+			// Convert to scheduled shape for debugging algorithm
+			foreach($shapeData as $point) {
+				$convertedPoint = array("Shape" => $point["ShapePoint"]);
+				array_push($shape, $convertedPoint);
+			}
+
+			$stops = array();
+			foreach($trip["StopTime"] as $stop) {
+				$pointData["lat"] = $stop["Stop"]["stop_lat"];
+				$pointData["lng"] = $stop["Stop"]["stop_lon"];
+				$pointData["time"] = $stop["departure_time_seconds"];
+				array_push($stops, $pointData);
+			}
+			$results = $this->Trip->shapeToScheduledShape($shape, $stops);
+			$this->Trip->computeShapeTimes($results);
+
+			$shapeData = array();
+			$i=0;
+			foreach($results as $result) {
+				$convertedBack = null;
+				$convertedBack["ShapePoint"]["shape_pt_lat"] = $result["lat"];
+				$convertedBack["ShapePoint"]["shape_pt_lon"] = $result["lng"];
+				if(!empty($result["time"])) {
+					$convertedBack["ShapePoint"]["computed_time"] = $result["time"];
+				}
+				if(!empty($result["stop"])) {
+					$convertedBack["ShapePoint"]["type"] = "stop";
+				}
+				if(!empty($result["shape"])) {
+					$convertedBack["ShapePoint"]["type"] = "shape";
+				}
+				
+				$convertedBack["ShapePoint"]["shape_pt_sequence"] = $i;
+
+				array_push($shapeData, $convertedBack);
+				$i++;
+			}
+		}
+		
 		foreach($shapeData as $point) 
 		{
 			$shapePoint = array();
@@ -59,12 +108,11 @@ class TripsController extends AppController {
 	function cacheTrip($reload = false) {
 		$timeStart = microtime(true);
 		if($reload) {
-			echo '<head><meta http-equiv="REFRESH" content="30;url=http://www.departapp.com/Trips/cacheTrip/true"></head>';
+			echo '<head><meta http-equiv="REFRESH" content="10;url=/Trips/cacheTrip/true"></head>';
 		}
 		$this->Trip->cacheTrip();
 		$time = microtime(true) - $timeStart;
 		echo " Time $time";
-		
 	}
 }
 ?>

@@ -46,3 +46,11 @@ $stop['departure_time'] = $hours.':'.pad($minutes,2).':'.pad($seconds,2);
 <? if(!coveredStop($stop['departure_time_seconds'],$time_shift)) { ?><b><? } ?><?= $stop['departure_time']; ?> - <?= ucname($stop['Stop']['description']); ?><? if(!coveredStop($stop['departure_time_seconds'],$time_shift)) { ?></b><? } ?><br/>
 <? } ?></p>
 <input id="showStreetView" onclick="javascript:streetViewOpened=true;" type="submit" value="Street View (alpha)">
+
+<? if($debug) { ?>
+<br />
+<h3>Debug</h3>
+<p>
+	Trip ID: <a href="/Trips/view/<?= $trip["Trip"]["id"]; ?>.json" target="_blank"><?= $trip["Trip"]["id"]; ?></a>
+</p>
+<? } ?>

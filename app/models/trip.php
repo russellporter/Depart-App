@@ -160,8 +160,8 @@ class Trip extends AppModel {
 		return $baselineTimestamp;
 	}
 	
-	function cacheTrip() {
-		$startDay = $this->baselineTimestamp(time()) + 86400; // generate stuff for tomorrow
+	function cacheTrip($startTimeOffset = 0) {
+		$startDay = $this->baselineTimestamp(time()) + 86400 + $startTimeOffset; // generate stuff for tomorrow
 		$endDay = $startDay + 86400;
 		$offset = 0;
 		$additionalOverlapRequest = Configure::read('TripCache.extraTimeBuffer');
@@ -251,7 +251,7 @@ class Trip extends AppModel {
 			$query = "SELECT ".$selectFields." FROM ".$databaseFrom." WHERE ".$databaseWhere." ORDER BY ".$databaseOrderBy;
 			$previousDay = false;
 		}
-
+		echo $query;
 		$tripsInArea = $this->query($query);
 
 		$baselineTimestamp = $this->baselineTimestamp($startTimestamp);

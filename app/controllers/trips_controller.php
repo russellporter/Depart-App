@@ -105,12 +105,17 @@ class TripsController extends AppController {
 		}
 	}
 	
-	function cacheTrip($reload = false) {
+	function cacheTrip($reload = false, $yesterday = false) {
 		$timeStart = microtime(true);
 		if($reload) {
-			echo '<head><meta http-equiv="REFRESH" content="30;url=/Trips/cacheTrip/true"></head>';
+			echo '<head><meta http-equiv="REFRESH" content="30;url=/Trips/cacheTrip/true/'.$yesterday.'"></head>';
 		}
-		$this->Trip->cacheTrip();
+		if($yesterday) {
+			$dayOffset = -86400;
+		} else {
+			$dayOffset = 0;
+		}
+		$this->Trip->cacheTrip($dayOffset);
 		$time = microtime(true) - $timeStart;
 		echo " Time $time";
 	}

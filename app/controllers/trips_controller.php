@@ -14,10 +14,9 @@ class TripsController extends AppController {
 		
 		$fileTarget = Configure::read('TripCache.prefix').($startFileTime).'.json';
 		$webTarget = Configure::read('TripCache.webPrefix').($startFileTime).'.json';
-		
 		if(file_exists($fileTarget)) {	
-			$trips = file_get_contents($fileTarget);
-			$this->set('trips', $trips);
+	$trips = file_get_contents($fileTarget);
+$this->set('trips', $trips);
 			//$this->redirect($webTarget);
     		/*$this->view = 'Media';
 			$params = array(
@@ -31,7 +30,7 @@ class TripsController extends AppController {
 
 		} else {
 			if(empty($startTime) || empty($duration)) {
-				$startTime = time()-1000;
+				$startTime = $timestamp-1000;
 				$duration = 2500;
 			}
 			if(empty($north)) {
@@ -108,7 +107,7 @@ class TripsController extends AppController {
 	function cacheTrip($reload = false, $yesterday = false) {
 		$timeStart = microtime(true);
 		if($reload) {
-			echo '<head><meta http-equiv="REFRESH" content="30;url=/Trips/cacheTrip/true/'.$yesterday.'"></head>';
+			echo '<head><meta http-equiv="REFRESH" content="0;url=/Trips/cacheTrip/true/'.$yesterday.'"></head>';
 		}
 		if($yesterday) {
 			$dayOffset = -86400;

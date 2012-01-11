@@ -251,7 +251,6 @@ class Trip extends AppModel {
 			$query = "SELECT ".$selectFields." FROM ".$databaseFrom." WHERE ".$databaseWhere." ORDER BY ".$databaseOrderBy;
 			$previousDay = false;
 		}
-		echo $query;
 		$tripsInArea = $this->query($query);
 
 		$baselineTimestamp = $this->baselineTimestamp($startTimestamp);
